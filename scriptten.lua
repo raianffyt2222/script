@@ -21177,6 +21177,24 @@ if not getgenv().AlreadyLoad then
 
 			table.sort(fruitSet)
 			getgenv().SelectedFruitToStore = normalizeSelectedItems(getgenv().SelectedFruitToStore or {})
+            -- Xeno: game:HttpGet nao existe, oxideui chama ele internamente. Patcheia aqui.
+if type(game.HttpGet) ~= "function" then
+    local nativeHttpGet = HttpGet
+    game.HttpGet = function(self, url)
+        if type(nativeHttpGet) == "function" then
+            return nativeHttpGet(url)
+        end
+        if type(request) == "function" then
+            local r = request({ Url = url, Method = "GET" })
+            return r and r.Body or ""
+        end
+        if type(http_request) == "function" then
+            local r = http_request({ Url = url, Method = "GET" })
+            return r and r.Body or ""
+        end
+        error("nenhum metodo HTTP disponivel")
+    end
+end
 			local tensenUILib = getgenv().__TensenLS(HttpGet("https://raw.githubusercontent.com/LeviOnTopLOL/Halloween/refs/heads/main/oxideui.lua"))()
 			getgenv().TensenUILib = tensenUILib
 			tensenUILib:SetTheme("Light")
