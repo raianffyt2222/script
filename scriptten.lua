@@ -21195,7 +21195,34 @@ if type(game.HttpGet) ~= "function" then
         error("nenhum metodo HTTP disponivel")
     end
 end
-			local tensenUILib = getgenv().__TensenLS(HttpGet("https://raw.githubusercontent.com/LeviOnTopLOL/Halloween/refs/heads/main/oxideui.lua"))()
+			-- Xeno: baixa a oxideui com request/http_request (HttpGet global e game:HttpGet falham aqui)
+local function __tensenFetch(url)
+    local ok, body
+    if type(request) == "function" then
+        ok, body = pcall(function()
+            local r = request({ Url = url, Method = "GET" })
+            return r and r.Body
+        end)
+        if ok and type(body) == "string" and body ~= "" then return body end
+    end
+    if type(http_request) == "function" then
+        ok, body = pcall(function()
+            local r = http_request({ Url = url, Method = "GET" })
+            return r and r.Body
+        end)
+        if ok and type(body) == "string" and body ~= "" then return body end
+    end
+    if type(syn) == "table" and type(syn.request) == "function" then
+        ok, body = pcall(function()
+            local r = syn.request({ Url = url, Method = "GET" })
+            return r and r.Body
+        end)
+        if ok and type(body) == "string" and body ~= "" then return body end
+    end
+    error("[Tensen] nenhum metodo HTTP disponivel nesse executor (request / http_request / syn.request todos falharam)")
+end
+
+local tensenUILib = getgenv().__TensenLS(__tensenFetch("https://raw.githubusercontent.com/LeviOnTopLOL/Halloween/refs/heads/main/oxideui.lua"))()
 			getgenv().TensenUILib = tensenUILib
 			tensenUILib:SetTheme("Light")
 			getgenv().__TensenGuiBefore = {}
